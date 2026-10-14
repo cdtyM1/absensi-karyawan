@@ -12,7 +12,12 @@ class AttendanceEvidence
         if (! config('attendance.require_evidence')) {
             return 'Tanpa bukti (konfigurasi server)';
         }
-        $r->validate(['latitude' => 'required|numeric|between:-90,90', 'longitude' => 'required|numeric|between:-180,180', 'accuracy' => 'required|numeric|between:0,100000', 'selfie' => 'required|file|image|mimes:jpg,jpeg,png|max:2048|dimensions:min_width=64,min_height=64,max_width=1920,max_height=1920']);
+        $required = config('attendance.require_location', true) || $r->filled('latitude') || $r->filled('longitude') || $r->filled('accuracy');
+        $locationRule = $required ? 'required' : 'nullable';
+        $r->validate(['latitude' => $locationRule.'|numeric|between:-90,90', 'longitude' => $locationRule.'|numeric|between:-180,180', 'accuracy' => $locationRule.'|numeric|between:0,100000', 'selfie' => 'required|file|image|mimes:jpg,jpeg,png|max:2048|dimensions:min_width=64,min_height=64,max_width=1920,max_height=1920']);
+        if (! $required) {
+            return 'Lokasi tidak tersedia—perlu pemeriksaan HR';
+        }
         $lat = config('attendance.office_latitude');
         $lng = config('attendance.office_longitude');
         if ($mode === 'Kantor' && $lat !== null && $lat !== '' && $lng !== null && $lng !== '') {
@@ -47,6 +52,6 @@ class AttendanceEvidence
         }
         $path = $r->file('selfie')->store('selfies/'.$r->user()->id, 'evidence');
 
-        return [$prefix.'_latitude' => (float) $r->input('latitude'), $prefix.'_longitude' => (float) $r->input('longitude'), $prefix.'_accuracy' => (float) $r->input('accuracy'), $prefix.'_selfie_path' => $path, $prefix.'_location_note' => $note];
+        return [$prefix.'_latitude' => $r->filled('latitude') ? (float) $r->input('latitude') : null, $prefix.'_longitude' => $r->filled('longitude') ? (float) $r->input('longitude') : null, $prefix.'_accuracy' => $r->filled('accuracy') ? (float) $r->input('accuracy') : null, $prefix.'_selfie_path' => $path, $prefix.'_location_note' => $note];
     }
 }

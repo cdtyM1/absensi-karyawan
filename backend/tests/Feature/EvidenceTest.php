@@ -104,6 +104,41 @@ class EvidenceTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/admin')->assertOk()->assertSee('Data lama: belum ada bukti');
     }
 
+    public function test_selfie_only_mode_saves_null_location_and_hr_note(): void
+    {
+        config(['attendance.require_location' => false, 'attendance.office_latitude' => -6.2, 'attendance.office_longitude' => 106.8]);
+        $this->actingAs(User::factory()->create());
+        $this->post('/attendance/in', ['mode' => 'Kantor'])->assertSessionHasErrors('selfie');
+        $this->assertDatabaseCount('attendances', 0);
+        $this->post('/attendance/in', ['mode' => 'Kantor', 'selfie' => UploadedFile::fake()->image('selfie.jpg', 640, 480)])->assertSessionHasNoErrors();
+        $a = Attendance::first();
+        $this->assertNull($a->in_latitude);
+        $this->assertNull($a->in_longitude);
+        $this->assertNull($a->in_accuracy);
+        Storage::disk('evidence')->assertExists($a->in_selfie_path);
+        $this->assertEquals('Lokasi tidak tersedia—perlu pemeriksaan HR', $a->in_location_note);
+        $this->post('/attendance/out')->assertSessionHasErrors('selfie');
+        $this->post('/attendance/out', ['selfie' => UploadedFile::fake()->image('out.jpg', 640, 480)])->assertSessionHasNoErrors();
+        $this->assertNull($a->fresh()->out_latitude);
+        Storage::disk('evidence')->assertExists($a->fresh()->out_selfie_path);
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/admin')->assertOk()->assertSee('Lokasi tidak tersedia—perlu pemeriksaan HR')->assertDontSee('Akurasi ± m');
+    }
+
+    public function test_optional_location_still_rejects_partial_and_outside_coordinates(): void
+    {
+        config(['attendance.require_location' => false, 'attendance.office_latitude' => -6.2, 'attendance.office_longitude' => 106.8]);
+        $this->actingAs(User::factory()->create());
+        $p = $this->payload();
+        unset($p['longitude']);
+        $this->post('/attendance/in', $p)->assertSessionHasErrors('longitude');
+        $p = $this->payload();
+        $p['latitude'] = -7;
+        $this->post('/attendance/in', $p)->assertSessionHasErrors('location');
+        config(['attendance.require_location' => true]);
+        $this->post('/attendance/in', ['mode' => 'Kantor', 'selfie' => UploadedFile::fake()->image('selfie.jpg', 640, 480)])->assertSessionHasErrors(['latitude', 'longitude', 'accuracy']);
+        $this->assertDatabaseCount('attendances', 0);
+    }
+
     public function test_duplicate_does_not_leave_orphan_files(): void
     {
         $this->actingAs(User::factory()->create())->post('/attendance/in', $this->payload());
