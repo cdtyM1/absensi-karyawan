@@ -16,6 +16,7 @@ Route::middleware(['auth', ActiveAccount::class])->group(function () {
     Route::get('/dashboard', [AttendanceController::class, 'index'])->name('dashboard');
     Route::post('/attendance/in', [AttendanceController::class, 'checkIn'])->name('attendance.in');
     Route::post('/attendance/out', [AttendanceController::class, 'checkOut'])->name('attendance.out');
+    Route::get('/attendance/{attendance}/selfie/{phase}', [AttendanceController::class, 'selfie'])->where('phase', 'in|out')->name('attendance.selfie');
     Route::get('/admin', [AdminController::class, 'index'])->name('admin');
     Route::post('/admin/users', [AdminController::class, 'createUser'])->name('admin.users');
     Route::get('/admin/export', [AdminController::class, 'export'])->name('admin.export');

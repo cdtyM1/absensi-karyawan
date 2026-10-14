@@ -29,6 +29,7 @@ return [
     */
 
     'disks' => [
+        'evidence' => ['driver' => 'local', 'root' => storage_path('app/evidence'), 'visibility' => 'private', 'serve' => false, 'throw' => true],
 
         'local' => [
             'driver' => 'local',

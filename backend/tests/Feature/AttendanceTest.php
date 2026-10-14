@@ -13,6 +13,12 @@ class AttendanceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['attendance.require_evidence' => false]);
+    }
+
     private function employee(): User
     {
         return User::factory()->create(['employee_code' => 'J001']);
@@ -125,8 +131,8 @@ class AttendanceTest extends TestCase
         Attendance::create(['user_id' => $u->id, 'work_date' => '2026-10-14', 'mode' => 'Kantor', 'checked_in_at' => '2026-10-14 08:30:00', 'arrival_status' => 'Tepat waktu']);
         $admin = User::factory()->create(['role' => 'admin']);
         $csv = $this->actingAs($admin)->get('/admin/export')->streamedContent();
-        $this->assertStringContainsString("'=1+1",$csv);
-        $this->assertStringContainsString('J001',$csv);
-        $this->assertStringContainsString('08:30:00',$csv);
+        $this->assertStringContainsString("'=1+1", $csv);
+        $this->assertStringContainsString('J001', $csv);
+        $this->assertStringContainsString('08:30:00', $csv);
     }
 }

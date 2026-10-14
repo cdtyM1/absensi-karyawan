@@ -28,7 +28,7 @@ Buka http://localhost:8000. Akun admin dibuat interaktif tanpa password bawaan. 
 `php artisan test`
 
 ## Batas tahap ini
-GPS, selfie, persetujuan penugasan, izin/cuti, jadwal khusus, hari libur nasional dan koreksi audit belum diimplementasikan pada backend. Form mode lapangan hanya merekam keterangan. Minggu ditolak. Tidak menghitung lembur/payroll. Logout dan POST menggunakan CSRF Laravel. Karyawan hanya dapat melihat catatan sendiri; HR dapat membaca rekap seluruh karyawan.
+Persetujuan penugasan, izin/cuti, jadwal khusus, hari libur nasional dan koreksi audit belum diimplementasikan pada backend. Mode lapangan merekam keterangan tugas, lokasi dan selfie; belum memverifikasi lokasi penugasan. Minggu ditolak. Tidak menghitung lembur/payroll. Logout dan POST menggunakan CSRF Laravel. Karyawan hanya dapat melihat catatan sendiri; HR dapat membaca rekap seluruh karyawan.
 
 Satu record per karyawan per tanggal WIB, masuk/pulang hanya untuk hari berjalan. Toleransi sampai 08.40.00, setelah itu menit keterlambatan dihitung dari 08.30 dan dibulatkan ke atas. Pulang sebelum jadwal ditandai. Ketentuan menit ini perlu persetujuan HR sebelum dipakai untuk payroll. Spreadsheet memakai pembulatan menit terdekat, sehingga rekap produksi kelak harus menggunakan hasil server.
 
@@ -36,3 +36,16 @@ Satu record per karyawan per tanggal WIB, masuk/pulang hanya untuk hari berjalan
 https://laravel.com/docs/12.x/authentication
 https://laravel.com/docs/12.x/database
 https://laravel.com/docs/12.x/deployment
+
+## GPS dan selfie
+Setelah memperbarui kode, jalankan `php artisan migrate` dan `php artisan config:clear`. Data lama tetap tersimpan; kolom bukti untuk data lama kosong.
+
+Bukti wajib secara default pada masuk dan pulang. Klik Ambil lokasi, Buka kamera, Ambil selfie, lalu tombol absen. Izin kamera/lokasi diperlukan. Localhost atau 127.0.0.1 dapat digunakan untuk uji di Mac. Akses dari HP melalui alamat LAN memerlukan HTTPS. Posisi Mac dapat berupa perkiraan Wi-Fi, bukan sensor GPS.
+
+Foto maksimal 2 MiB, JPEG/PNG, dimensi 64–1920 piksel. File privat pada `storage/app/evidence`, bukan pada public. Jangan menjalankan storage:link untuk folder bukti. Akses foto memerlukan sesi login pemilik atau Admin/HR. Cadangkan folder ini bersama database.
+
+Lokasi diambil sekali saat diminta, tidak dilacak terus. Frontend meminta lokasi baru (60 detik) dan foto baru (2 menit). Batas waktu ini adalah pemeriksaan browser; server tidak membuktikan waktu pengambilan, keaslian kamera, liveness, lokasi GPS, atau kecocokan wajah. Data klien dapat dimanipulasi. Ini bukti pendukung untuk HR.
+
+Radius kantor belum aktif sampai `OFFICE_LATITUDE` dan `OFFICE_LONGITUDE` diisi di .env server. Radius default 100 m, akurasi maksimal untuk radius 100 m, dapat diubah dengan `OFFICE_RADIUS_M` dan `OFFICE_MAX_ACCURACY_M`. Lokasi di luar radius atau akurasi yang tidak cukup ditolak untuk mode kantor. Mode lapangan perlu pemeriksaan HR dan belum dikunci ke penugasan. Karyawan masih memilih mode sendiri. Jangan menganggap fitur ini mencegah semua kecurangan.
+
+`ATTENDANCE_REQUIRE_EVIDENCE=false` hanya untuk pengujian/kebijakan pengecualian server. Pengaturan itu mengizinkan absen tanpa bukti dan bukan pilihan yang dapat diubah karyawan.
