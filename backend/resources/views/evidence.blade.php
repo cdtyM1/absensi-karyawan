@@ -1,7 +1,7 @@
 @if(config('attendance.require_evidence'))
 <div class="evidence" data-evidence>
- <p>Lokasi diambil saat diminta. Kamera hanya digunakan untuk selfie, tanpa merekam suara.</p>
- <button type="button" data-location>Ambil lokasi</button><p data-location-message role="status">Lokasi belum diambil.</p>
+ <p>Lokasi diambil otomatis saat halaman dibuka dan diperbarui saat mengirim jika sudah kedaluwarsa. Kamera hanya digunakan untuk selfie, tanpa merekam suara.</p>
+ <button type="button" data-location>Coba lokasi lagi</button><p data-location-message role="status">Menyiapkan lokasi otomatis…</p>
  <input type="hidden" name="latitude"><input type="hidden" name="longitude"><input type="hidden" name="accuracy">
  <button type="button" data-camera>Buka kamera</button> <button type="button" data-capture disabled>Ambil selfie</button> <button type="button" data-stop>Tutup kamera</button>
  <video data-video autoplay muted playsinline hidden></video><img data-preview alt="Selfie yang akan dikirim" hidden><p data-camera-message role="status">Selfie belum diambil.</p>

@@ -93,7 +93,7 @@ class EvidenceTest extends TestCase
         $p['latitude'] = -7;
         $this->actingAs(User::factory()->create())->post('/attendance/in', $p)->assertSessionHasNoErrors();
         $this->assertEquals('Lokasi lapangan tercatat; perlu pemeriksaan HR', Attendance::first()->in_location_note);
-        $this->get('/dashboard')->assertOk()->assertSee('Ambil lokasi');
+        $this->get('/dashboard')->assertOk()->assertSee('Coba lokasi lagi');
     }
 
     public function test_old_records_without_evidence_are_supported(): void
