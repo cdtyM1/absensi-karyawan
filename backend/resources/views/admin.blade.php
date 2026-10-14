@@ -12,9 +12,14 @@
 <tr><td colspan="7">Belum ada data untuk filter ini.</td></tr>
 @endforelse
 </table></div>{{ $records->links() }}</div><div class="grid"><div class="card"><h2>Buat akun karyawan</h2><form method="post" action="{{ route('admin.users') }}">
-@csrf<label>ID karyawan<input placeholder="Penomoran belum siap" value="{{ $nextEmployeeCode }}" readonly aria-describedby="employee-code-help"><small id="employee-code-help">@if($nextEmployeeCode === null)Penomoran belum siap. Jalankan php artisan migrate pada server.@else ID otomatis saat akun disimpan. Nomor dapat berubah jika admin lain membuat akun terlebih dahulu.@endif</small></label><label>Nama<input name="name" maxlength="100" value="{{ old('name') }}" required></label><label>Email<input type="email" name="email" value="{{ old('email') }}" required></label><label>Kata sandi<input type="password" name="password" autocomplete="new-password" required></label><label>Ulangi kata sandi<input type="password" name="password_confirmation" autocomplete="new-password" required></label><p>Kata sandi bebas; ulangi dengan nilai yang sama.</p><button>Buat akun</button></form></div><div class="card"><h2>Daftar akun</h2><table><tr><th>ID</th><th>Nama</th><th>Akses</th><th>Kelola</th></tr>
-@foreach($users as $u)<tr><td>{{ $u->employee_code }}</td><td>{{ $u->name }}</td><td>{{ $u->role }} / {{ $u->active?'Aktif':'Nonaktif' }}</td><td><a href="{{ route('admin.users.edit',$u) }}">Kelola</a></td></tr>
+@csrf<label>ID karyawan<input placeholder="Penomoran belum siap" value="{{ $nextEmployeeCode }}" readonly aria-describedby="employee-code-help"><small id="employee-code-help">@if($nextEmployeeCode === null)Penomoran belum siap. Jalankan php artisan migrate pada server.@else ID otomatis saat akun disimpan. Nomor dapat berubah jika admin lain membuat akun terlebih dahulu.@endif</small></label><label>Nama<input name="name" maxlength="100" value="{{ old('name') }}" required></label><label>Email<input type="email" name="email" value="{{ old('email') }}" required></label><label>Kata sandi<input type="password" name="password" autocomplete="new-password" required></label><label>Ulangi kata sandi<input type="password" name="password_confirmation" autocomplete="new-password" required></label><p>Kata sandi bebas; ulangi dengan nilai yang sama.</p><button>Buat akun</button></form></div><div class="card" data-account-list><h2>Daftar akun</h2>
+<label for="account-search">Cari akun</label><input id="account-search" type="search" placeholder="Cari ID, nama, atau akses…" autocomplete="off" data-account-search aria-controls="account-table">
+<p data-account-count role="status" aria-live="polite">{{ $users->count() }} akun</p>
+<div class="account-scroll" tabindex="0" role="region" aria-label="Daftar akun karyawan"><table id="account-table"><thead><tr><th>ID</th><th>Nama</th><th>Akses</th><th>Kelola</th></tr></thead><tbody>
+@foreach($users as $u)
+<tr data-account-row><td>{{ $u->employee_code }}</td><td>{{ $u->name }}</td><td>{{ $u->role }} / {{ $u->active?'Aktif':'Nonaktif' }}</td><td><a href="{{ route('admin.users.edit',$u) }}">Kelola</a></td></tr>
 @endforeach
-</table></div></div>
-
+<tr data-account-empty @if($users->isNotEmpty()) hidden @endif><td colspan="4">Tidak ada akun yang cocok.</td></tr>
+</tbody></table></div></div></div>
+<script src="{{ asset('accounts.js').'?v='.filemtime(public_path('accounts.js')) }}" defer></script>
 @endsection
