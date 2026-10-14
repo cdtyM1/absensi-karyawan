@@ -2,7 +2,7 @@
  for (const form of document.querySelectorAll('[data-attendance-form]')) {
   const panel=form.querySelector('[data-evidence]'); if(!panel)continue;
   const video=panel.querySelector('[data-video]'),preview=panel.querySelector('[data-preview]'),cameraMsg=panel.querySelector('[data-camera-message]'),locationMsg=panel.querySelector('[data-location-message]');
-  let stream=null,locationAt=0,photoAt=0,previewUrl=null,locationPending=null;
+  let stream=null,locationAt=0,photoAt=0,previewUrl=null,locationPending=null,cancelLocation=null;
   const stop=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;video.hidden=true;panel.querySelector('[data-capture]').disabled=true;};
   const clearLocation=()=>{locationAt=0;for(const n of ['latitude','longitude','accuracy'])form.elements[n].value='';};
   const clearPhoto=()=>{photoAt=0;form.elements.selfie.value='';if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=null;preview.hidden=true;preview.removeAttribute('src');};
@@ -12,14 +12,28 @@
    if(!window.isSecureContext||!navigator.geolocation){locationMsg.textContent='Lokasi membutuhkan HTTPS atau localhost dan browser yang mendukungnya.';return Promise.resolve(false);}
    const button=panel.querySelector('[data-location]');button.disabled=true;
    locationMsg.textContent='Mencari lokasi otomatis… izinkan akses lokasi di browser.';
-   locationPending=new Promise(resolve=>navigator.geolocation.getCurrentPosition(p=>{
-    if(Date.now()-p.timestamp>60000){locationMsg.textContent='Lokasi terlalu lama. Klik Coba lokasi lagi.';resolve(false);return;}
-    for(const n of ['latitude','longitude','accuracy'])form.elements[n].value=p.coords[n];
-    locationAt=Date.now();locationMsg.textContent=`Lokasi tercatat. Akurasi ±${Math.round(p.coords.accuracy)} m.`;resolve(true);
-   },e=>{
-    locationMsg.textContent=e.code===1?'Izin lokasi ditolak. Aktifkan izin lokasi di browser dan perangkat, lalu klik Coba lokasi lagi.':e.code===3?'Pencarian lokasi melewati batas waktu. Klik Coba lokasi lagi atau gunakan HP.':'Lokasi tidak tersedia. Periksa layanan lokasi perangkat, lalu klik Coba lokasi lagi.';
-    resolve(false);
-   },{enableHighAccuracy:true,timeout:20000,maximumAge:0})).finally(()=>{button.disabled=false;locationPending=null;});
+   locationPending=new Promise(resolve=>{
+    let watchId=null,finished=false,staleAge=null;
+    const finish=(ok,message)=>{if(finished)return;finished=true;clearTimeout(deadline);if(watchId!==null)navigator.geolocation.clearWatch(watchId);if(message)locationMsg.textContent=message;resolve(ok);};
+    const deadline=setTimeout(()=>finish(false,staleAge!==null?`Perangkat masih memberikan lokasi lama (${staleAge} detik). Periksa tanggal/jam otomatis dan Layanan Lokasi perangkat, lalu coba lagi atau gunakan HP.`:'Lokasi belum tersedia setelah 30 detik. Periksa izin dan Layanan Lokasi perangkat, lalu coba lagi.'),30000);
+    try{
+     watchId=navigator.geolocation.watchPosition(p=>{
+      if(finished)return;
+      const age=Date.now()-p.timestamp;
+      if(!Number.isFinite(p.timestamp)||p.timestamp<=0||age < -5000){locationMsg.textContent='Waktu lokasi tidak sesuai. Periksa tanggal dan jam otomatis perangkat.';return;}
+      if(age>60000){staleAge=Math.round(age/1000);locationMsg.textContent='Perangkat memberikan lokasi lama. Menunggu lokasi terbaru…';return;}
+      const c=p.coords;
+      if(!Number.isFinite(c.latitude)||Math.abs(c.latitude)>90||!Number.isFinite(c.longitude)||Math.abs(c.longitude)>180||!Number.isFinite(c.accuracy)||c.accuracy<0){locationMsg.textContent='Data lokasi belum valid. Menunggu pembaruan…';return;}
+      for(const n of ['latitude','longitude','accuracy'])form.elements[n].value=c[n];
+      locationAt=p.timestamp;finish(true,`Lokasi tercatat. Akurasi ±${Math.round(c.accuracy)} m.`);
+     },e=>{
+      if(e.code===1)finish(false,'Izin lokasi ditolak. Aktifkan izin lokasi di browser dan perangkat, lalu klik Coba lokasi lagi.');
+      else locationMsg.textContent='Lokasi belum tersedia. Masih mencoba sampai 30 detik…';
+     },{enableHighAccuracy:true,timeout:10000,maximumAge:0});
+     if(finished)navigator.geolocation.clearWatch(watchId);
+    }catch{finish(false,'Layanan lokasi tidak dapat dimulai. Periksa izin browser, lalu coba lagi.');}
+    cancelLocation=()=>finish(false,'Pencarian lokasi dihentikan. Klik Coba lokasi lagi.');
+   }).finally(()=>{button.disabled=false;locationPending=null;cancelLocation=null;});
    return locationPending;
   };
   panel.querySelector('[data-location]').onclick=()=>getLocation();
@@ -40,7 +54,7 @@
     stop();HTMLFormElement.prototype.submit.call(form);
    }finally{submitting=false;button.disabled=false;}
   });
-  window.addEventListener('pagehide',()=>{stop();clearPreview();});
+  window.addEventListener('pagehide',()=>{stop();clearPreview();if(cancelLocation)cancelLocation();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
  }
 })();

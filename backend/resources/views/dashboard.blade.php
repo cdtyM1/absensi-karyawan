@@ -26,6 +26,6 @@
 @empty
 <tr><td colspan="6">Belum ada absensi.</td></tr>
 @endforelse
-</table></div>{{ $records->links() }}</div><script src="{{ asset('attendance.js') }}" defer></script>
+</table></div>{{ $records->links() }}</div><script src="{{ asset('attendance.js').'?v='.filemtime(public_path('attendance.js')) }}" defer></script>
 
 @endsection
