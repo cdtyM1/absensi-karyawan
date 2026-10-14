@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+node_modules/
+vendor/
+*.xlsx
+*.csv
+uploads/
+*.log
