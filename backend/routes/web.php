@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\WorkRequestController;
+use App\Http\Controllers\AttendanceSettingsController;
+use App\Http\Middleware\LoadAttendanceSettings;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
@@ -13,7 +15,9 @@ Route::middleware('guest')->group(function () {
     Route::view('/login', 'login')->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
 });
-Route::middleware(['auth', ActiveAccount::class])->group(function () {
+Route::middleware(['auth', ActiveAccount::class, LoadAttendanceSettings::class])->group(function () {
+    Route::get('/admin/settings', [AttendanceSettingsController::class, 'edit'])->name('admin.settings');
+    Route::patch('/admin/settings', [AttendanceSettingsController::class, 'update'])->name('admin.settings.update');
     Route::get('/requests', [WorkRequestController::class, 'index'])->name('requests');
     Route::get('/requests/{workRequest}/attachment', [WorkRequestController::class, 'attachment'])->name('requests.attachment');
     Route::post('/requests', [WorkRequestController::class, 'store'])->name('requests.store');

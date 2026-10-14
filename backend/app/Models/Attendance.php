@@ -11,7 +11,7 @@ class Attendance extends Model
 
     protected function casts(): array
     {
-        return ['work_date' => 'date', 'checked_in_at' => 'datetime', 'checked_out_at' => 'datetime'];
+        return ['work_date' => 'date', 'checked_in_at' => 'datetime', 'checked_out_at' => 'datetime', 'scheduled_start_at' => 'immutable_datetime', 'scheduled_end_at' => 'immutable_datetime', 'tolerance_minutes' => 'integer'];
     }
 
     public function user(): BelongsTo

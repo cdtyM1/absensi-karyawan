@@ -8,6 +8,7 @@ use App\Services\WorkSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -36,7 +37,7 @@ class AttendanceController extends Controller
                 if (Attendance::where('user_id', $r->user()->id)->whereDate('work_date', $now->toDateString())->exists()) {
                     throw ValidationException::withMessages(['attendance' => 'Absen masuk sudah tercatat hari ini.']);
                 }$evidence = AttendanceEvidence::store($r, 'in', $note);
-                Attendance::create(['user_id' => $r->user()->id, 'work_date' => $now->toDateString(), 'mode' => $data['mode'], 'assignment' => $data['assignment'] ?? null, 'checked_in_at' => $now, ...WorkSchedule::arrival($now), ...$evidence]);
+                Attendance::create(['user_id' => $r->user()->id, 'work_date' => $now->toDateString(), 'mode' => $data['mode'], 'assignment' => $data['assignment'] ?? null, 'checked_in_at' => $now, ...WorkSchedule::arrival($now), ...(Schema::hasColumn('attendances', 'scheduled_end_at') ? WorkSchedule::snapshot($now) : []), ...$evidence]);
             });
         } catch (Throwable $e) {
             if (isset($evidence['in_selfie_path'])) {
@@ -58,7 +59,7 @@ class AttendanceController extends Controller
                     throw ValidationException::withMessages(['attendance' => 'Absen masuk belum ada atau absen pulang sudah tercatat.']);
                 }$note = AttendanceEvidence::validate($r, $a->mode);
                 $evidence = AttendanceEvidence::store($r, 'out', $note);
-                $a->update(['checked_out_at' => $now, 'departure_status' => WorkSchedule::departure($now), ...$evidence]);
+                $a->update(['checked_out_at' => $now, 'departure_status' => WorkSchedule::departure($now, $a->scheduled_end_at ?? ($now->isSaturday() ? $now->setTime(12, 30) : $now->setTime(17, 0))), ...$evidence]);
             });
         } catch (Throwable $e) {
             if (isset($evidence['out_selfie_path'])) {
@@ -76,6 +77,6 @@ class AttendanceController extends Controller
         $path = $attendance->{$phase.'_selfie_path'};
         abort_unless($path && Storage::disk('evidence')->exists($path), 404);
 
-        return response()->file(Storage::disk('evidence')->path($path),['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
+        return response()->file(Storage::disk('evidence')->path($path), ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 }

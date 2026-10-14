@@ -14,7 +14,7 @@
 @endif
  
 @endif
-</div><div class="card"><h2>Jadwal kerja</h2><p>Senin–Jumat 08.30–17.00 WIB</p><p>Sabtu 08.30–12.30 WIB · Minggu libur</p><p>Toleransi sampai 08.40.00. Menit terlambat dihitung dari 08.30 setelah melewati toleransi.</p></div></div><div class="card"><h2>Riwayat saya</h2><div class="scroll"><table><tr><th>Tanggal</th><th>Mode</th><th>Masuk</th><th>Pulang</th><th>Status masuk</th><th>Status pulang</th></tr>
+</div><div class="card"><h2>Jadwal kerja</h2><p>Senin–Jumat {{ config('attendance.start_time') }}–{{ config('attendance.weekday_end_time') }} WIB</p><p>Sabtu {{ config('attendance.start_time') }}–{{ config('attendance.saturday_end_time') }} WIB · Minggu libur</p><p>Toleransi {{ config('attendance.tolerance_minutes') }} menit. Menit terlambat dihitung dari jam masuk setelah melewati toleransi.</p></div></div><div class="card"><h2>Riwayat saya</h2><div class="scroll"><table><tr><th>Tanggal</th><th>Mode</th><th>Masuk</th><th>Pulang</th><th>Status masuk</th><th>Status pulang</th></tr>
 @forelse($records as $a)<tr><td>{{ $a->work_date->format('d/m/Y') }}</td><td>{{ $a->mode }}</td><td>{{ $a->checked_in_at->format('H:i:s') }}</td><td>{{ $a->checked_out_at?->format('H:i:s') ?? 'Belum pulang' }}</td><td>{{ $a->arrival_status }}</td><td>{{ $a->departure_status ?? '—' }}<br>
 @if($a->in_selfie_path)<a target="_blank" rel="noopener" href="{{ route('attendance.selfie',[$a,'in']) }}">Selfie masuk</a>
 
