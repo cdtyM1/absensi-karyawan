@@ -62,3 +62,5 @@ Mode sementara selfie saja: tetapkan `ATTENDANCE_REQUIRE_LOCATION=false` di `.en
 Alur kamera: tekan Absen masuk/pulang untuk membuka kamera. Tombol yang sama berubah menjadi Ambil foto & kirim absensi; menekannya mengambil foto dan mengirim formulir. Batal menutup kamera tanpa menyimpan absensi. Izin kamera tetap diperlukan; foto tidak diambil diam-diam.
 
 ID akun karyawan baru dari Admin/HR otomatis berurutan a001, a002, dan seterusnya (a1000 setelah a999). ID ditetapkan server saat menyimpan dengan transaksi dan penguncian nomor. ID lama tidak berubah; nomor akun yang dihapus setelah fitur ini aktif tidak dipakai ulang. Migrasi menginisialisasi nomor dari ID a terbesar yang masih ada; ID yang telah dihapus sebelum migrasi tidak dapat diketahui. Kolom form hanya pratinjau. Perintah pembuatan admin tetap memakai ID manual.
+
+Kata sandi akun baru dan reset bebas tanpa syarat panjang minimal atau kombinasi karakter; wajib berupa teks dan konfirmasi harus sama. Pada reset, kedua kolom kosong mempertahankan sandi lama. Password tetap di-hash dan batas percobaan login tetap aktif.

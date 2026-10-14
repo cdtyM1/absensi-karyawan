@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class UserManagementController extends Controller
@@ -32,7 +31,7 @@ class UserManagementController extends Controller
         if (is_string($r->input('email'))) {
             $r->merge(['email' => Str::lower(trim($r->input('email')))]);
         }
-        $data = $r->validate(['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)], 'active' => 'required|boolean', 'password' => ['nullable', 'confirmed', Password::min(12)->mixedCase()->numbers()]]);
+        $data = $r->validate(['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)], 'active' => 'required|boolean', 'password' => ['nullable', 'confirmed', 'string']]);
         if ($user->role === 'admin' && ! $data['active']) {
             throw ValidationException::withMessages(['active' => 'Akun admin harus tetap aktif.']);
         }

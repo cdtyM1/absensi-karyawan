@@ -29,6 +29,15 @@ class EmployeeCodeTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $admin->id, 'employee_code' => 'z001']);
     }
 
+    public function test_short_password_is_accepted_but_empty_and_mismatch_are_rejected(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->createEmployee('empty@example.test', ['password' => '', 'password_confirmation' => ''])->assertSessionHasErrors('password');
+        $this->createEmployee('wrong@example.test', ['password' => 'a', 'password_confirmation' => 'b'])->assertSessionHasErrors('password');
+        $this->createEmployee('short@example.test', ['password' => 'a', 'password_confirmation' => 'a'])->assertSessionHasNoErrors();
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('a', User::where('email', 'short@example.test')->first()->password));
+    }
+
     public function test_deleting_account_does_not_reuse_number(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin', 'employee_code' => 'z001']));

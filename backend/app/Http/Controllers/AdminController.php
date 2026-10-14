@@ -8,7 +8,6 @@ use App\Services\EmployeeCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
 {
@@ -36,7 +35,7 @@ class AdminController extends Controller
         $this->authorizeAdmin($r);
         if (is_string($r->input('email'))) {
             $r->merge(['email' => strtolower(trim($r->input('email')))]);
-        }$data = $r->validate(['name' => 'required|string|max:100', 'email' => 'required|email|max:255|unique:users', 'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()]]);
+        }$data = $r->validate(['name' => 'required|string|max:100', 'email' => 'required|email|max:255|unique:users', 'password' => ['required', 'confirmed', 'string']]);
         $data['password'] = Hash::make($data['password']);
         $user = DB::transaction(function () use ($data) {
             $user = new User;

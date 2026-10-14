@@ -61,12 +61,19 @@ class UserManagementTest extends TestCase
         $this->post('/login', ['email' => $u->email, 'password' => 'FreshPassword12345'])->assertRedirect('/dashboard');
     }
 
-    public function test_duplicate_email_and_weak_password_are_rejected(): void
+    public function test_duplicate_email_and_mismatched_password_are_rejected(): void
     {
         $u = $this->staff();
         $admin = $this->admin();
         $this->actingAs($admin)->patch('/admin/users/'.$u->id, [...$this->data($u), 'email' => $admin->email])->assertSessionHasErrors('email');
         $this->patch('/admin/users/'.$u->id, [...$this->data($u), 'password' => 'short', 'password_confirmation' => 'different'])->assertSessionHasErrors('password');
+    }
+
+    public function test_short_password_is_accepted_for_reset(): void
+    {
+        $u = $this->staff();
+        $this->actingAs($this->admin())->patch('/admin/users/'.$u->id, [...$this->data($u), 'password' => 'a', 'password_confirmation' => 'a'])->assertSessionHasNoErrors();
+        $this->assertTrue(Hash::check('a', $u->fresh()->password));
     }
 
     public function test_disable_preserves_attendance_and_rejects_login(): void

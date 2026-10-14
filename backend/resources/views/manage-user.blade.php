@@ -16,9 +16,9 @@
 <label>Status<select name="active"><option value="1" @selected((string)old('active',(int)$account->active)==='1')>Aktif</option><option value="0" @selected((string)old('active',(int)$account->active)==='0')>Nonaktif</option></select></label>
 @endif
 <h2>Reset kata sandi</h2><p>Kosongkan kedua kolom untuk mempertahankan kata sandi sekarang.</p>
-<label>Kata sandi baru<input type="password" name="password" minlength="12" autocomplete="new-password"></label>
+<label>Kata sandi baru<input type="password" name="password" autocomplete="new-password"></label>
 <label>Ulangi kata sandi baru<input type="password" name="password_confirmation" autocomplete="new-password"></label>
-<p>Minimal 12 karakter, huruf besar/kecil dan angka. Kata sandi lama tidak ditampilkan.</p>
+<p>Kata sandi bebas; ulangi dengan nilai yang sama. Kata sandi lama tidak ditampilkan.</p>
 <button>Simpan perubahan</button>
 </form></div><div class="card"><h2>Hapus akun</h2>
 @if($account->role==='admin')
