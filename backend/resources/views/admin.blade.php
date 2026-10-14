@@ -12,8 +12,8 @@
 <tr><td colspan="7">Belum ada data untuk filter ini.</td></tr>
 @endforelse
 </table></div>{{ $records->links() }}</div><div class="grid"><div class="card"><h2>Buat akun karyawan</h2><form method="post" action="{{ route('admin.users') }}">
-@csrf<label>ID karyawan<input name="employee_code" maxlength="30" value="{{ old('employee_code') }}" required></label><label>Nama<input name="name" maxlength="100" value="{{ old('name') }}" required></label><label>Email<input type="email" name="email" value="{{ old('email') }}" required></label><label>Kata sandi<input type="password" name="password" minlength="12" autocomplete="new-password" required></label><label>Ulangi kata sandi<input type="password" name="password_confirmation" autocomplete="new-password" required></label><p>Minimal 12 karakter, huruf besar/kecil dan angka.</p><button>Buat akun</button></form></div><div class="card"><h2>Daftar akun</h2><table><tr><th>ID</th><th>Nama</th><th>Akses</th></tr>
-@foreach($users as $u)<tr><td>{{ $u->employee_code }}</td><td>{{ $u->name }}</td><td>{{ $u->role }} / {{ $u->active?'Aktif':'Nonaktif' }}</td></tr>
+@csrf<label>ID karyawan<input name="employee_code" maxlength="30" value="{{ old('employee_code') }}" required></label><label>Nama<input name="name" maxlength="100" value="{{ old('name') }}" required></label><label>Email<input type="email" name="email" value="{{ old('email') }}" required></label><label>Kata sandi<input type="password" name="password" minlength="12" autocomplete="new-password" required></label><label>Ulangi kata sandi<input type="password" name="password_confirmation" autocomplete="new-password" required></label><p>Minimal 12 karakter, huruf besar/kecil dan angka.</p><button>Buat akun</button></form></div><div class="card"><h2>Daftar akun</h2><table><tr><th>ID</th><th>Nama</th><th>Akses</th><th>Kelola</th></tr>
+@foreach($users as $u)<tr><td>{{ $u->employee_code }}</td><td>{{ $u->name }}</td><td>{{ $u->role }} / {{ $u->active?'Aktif':'Nonaktif' }}</td><td><a href="{{ route('admin.users.edit',$u) }}">Kelola</a></td></tr>
 @endforeach
 </table></div></div>
 

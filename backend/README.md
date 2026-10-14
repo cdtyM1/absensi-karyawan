@@ -49,3 +49,6 @@ Lokasi diambil sekali saat diminta, tidak dilacak terus. Frontend meminta lokasi
 Radius kantor belum aktif sampai `OFFICE_LATITUDE` dan `OFFICE_LONGITUDE` diisi di .env server. Radius default 100 m, akurasi maksimal untuk radius 100 m, dapat diubah dengan `OFFICE_RADIUS_M` dan `OFFICE_MAX_ACCURACY_M`. Lokasi di luar radius atau akurasi yang tidak cukup ditolak untuk mode kantor. Mode lapangan perlu pemeriksaan HR dan belum dikunci ke penugasan. Karyawan masih memilih mode sendiri. Jangan menganggap fitur ini mencegah semua kecurangan.
 
 `ATTENDANCE_REQUIRE_EVIDENCE=false` hanya untuk pengujian/kebijakan pengecualian server. Pengaturan itu mengizinkan absen tanpa bukti dan bukan pilihan yang dapat diubah karyawan.
+
+## Kelola akun
+Admin/HR dapat membuka Kelola pada daftar akun untuk mengganti nama/email, reset password, dan menonaktifkan karyawan. Kata sandi lama tidak ditampilkan. Perubahan email/password/status membatalkan sesi lama melalui auth_version (periksa pada request berikutnya), sedangkan sesi admin yang mengedit dirinya sendiri tetap dipertahankan. Akun admin tidak boleh dinonaktifkan/dihapus. Akun karyawan tanpa absensi dapat dihapus dengan konfirmasi ID; akun dengan absensi harus dinonaktifkan agar riwayat dan bukti tetap tersimpan. Setelah git pull, jalankan php artisan migrate dan php artisan config:clear.

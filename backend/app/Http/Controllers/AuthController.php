@@ -24,6 +24,7 @@ class AuthController extends Controller
         }
         RateLimiter::clear($key);
         $r->session()->regenerate();
+        $r->session()->put('auth_version', $r->user()->auth_version);
 
         return redirect()->intended(route('dashboard'));
     }
