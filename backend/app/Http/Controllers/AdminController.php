@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Models\WorkRequest;
 use App\Services\EmployeeCode;
-use Illuminate\Support\Facades\DB;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -27,7 +30,10 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($r);
 
-        return view('admin', ['records' => $this->records($r)->paginate(30)->withQueryString(), 'users' => User::orderBy('name')->get(), 'nextEmployeeCode' => EmployeeCode::preview()]);
+        return view('admin', ['records' => $this->records($r)->paginate(30)->withQueryString(), 'users' => User::orderBy('name')->get(), 'nextEmployeeCode' => EmployeeCode::preview(), 'approvedRequests' => Schema::hasTable('work_requests') ? WorkRequest::with(['user', 'reviewer'])->where('status', 'Disetujui')->when($r->filled('date'), function ($q) use ($r) {
+            $day = CarbonImmutable::parse($r->input('date'), 'Asia/Jakarta');
+            $q->where('starts_at', '<', $day->addDay())->where('ends_at', '>', $day);
+        })->latest()->paginate(10, ['*'], 'requests_page')->withQueryString() : null]);
     }
 
     public function createUser(Request $r)
@@ -46,6 +52,7 @@ class AdminController extends Controller
             $user->role = 'employee';
             $user->active = true;
             $user->save();
+
             return $user;
         }, 5);
 

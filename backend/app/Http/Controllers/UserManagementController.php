@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Models\WorkRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -22,7 +24,7 @@ class UserManagementController extends Controller
     {
         $this->authorizeAdmin($r);
 
-        return view('manage-user', ['account' => $user, 'hasAttendance' => Attendance::where('user_id', $user->id)->exists()]);
+        return view('manage-user', ['account' => $user, 'hasAttendance' => Attendance::where('user_id', $user->id)->exists() || (Schema::hasTable('work_requests') && WorkRequest::where('user_id', $user->id)->orWhere('reviewer_id', $user->id)->exists())]);
     }
 
     public function update(Request $r, User $user)
@@ -64,12 +66,12 @@ class UserManagementController extends Controller
         }
         DB::transaction(function () use ($user) {
             $u = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
-            if (Attendance::where('user_id', $u->id)->exists()) {
-                throw ValidationException::withMessages(['delete' => 'Akun memiliki riwayat absensi. Nonaktifkan akun agar riwayat tetap tersimpan.']);
+            if (Attendance::where('user_id', $u->id)->exists() || (Schema::hasTable('work_requests') && WorkRequest::where('user_id', $u->id)->orWhere('reviewer_id', $u->id)->exists())) {
+                throw ValidationException::withMessages(['delete' => 'Akun memiliki riwayat absensi atau pengajuan. Nonaktifkan akun agar riwayat tetap tersimpan.']);
             }DB::table('sessions')->where('user_id', $u->id)->delete();
             $u->delete();
         });
 
-        return redirect()->route('admin')->with('status','Akun tanpa riwayat absensi berhasil dihapus.');
+        return redirect()->route('admin')->with('status', 'Akun tanpa riwayat absensi berhasil dihapus.');
     }
 }

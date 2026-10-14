@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WorkRequestController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
@@ -13,6 +14,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
 });
 Route::middleware(['auth', ActiveAccount::class])->group(function () {
+    Route::get('/requests', [WorkRequestController::class, 'index'])->name('requests');
+    Route::post('/requests', [WorkRequestController::class, 'store'])->name('requests.store');
+    Route::get('/admin/requests', [WorkRequestController::class, 'admin'])->name('requests.admin');
+    Route::patch('/admin/requests/{workRequest}', [WorkRequestController::class, 'review'])->name('requests.review');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [AttendanceController::class, 'index'])->name('dashboard');
     Route::post('/attendance/in', [AttendanceController::class, 'checkIn'])->name('attendance.in');

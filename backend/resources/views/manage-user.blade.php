@@ -24,9 +24,9 @@
 @if($account->role==='admin')
 <p>Akun admin tidak dapat dihapus atau dinonaktifkan.</p>
 @elseif($hasAttendance)
-<p>Akun ini memiliki riwayat absensi. Pilih status Nonaktif dan Simpan perubahan untuk menghentikan akses sambil mempertahankan riwayatnya.</p>
+<p>Akun ini memiliki riwayat absensi atau pengajuan. Pilih status Nonaktif dan Simpan perubahan untuk menghentikan akses sambil mempertahankan riwayatnya.</p>
 @else
-<p>Penghapusan permanen tersedia karena akun belum memiliki riwayat absensi.</p>
+<p>Penghapusan permanen tersedia karena akun belum memiliki riwayat absensi atau pengajuan.</p>
 <form method="post" action="{{ route('admin.users.destroy',$account) }}">
 @csrf
 @method('DELETE')
