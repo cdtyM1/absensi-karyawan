@@ -26,3 +26,6 @@ Jangan unggah data karyawan, selfie, kata sandi atau .env ke repository publik.
 Laravel + MySQL untuk login, hak akses, database bersama, waktu server, selfie privat, lokasi, penugasan dan audit perubahan. Dapat dipasang pada hosting/VPS yang kompatibel. Migrasi mencakup kode, database, file privat dan konfigurasi server.
 
 Spreadsheet pendukung Jayahana_Absensi_Template.xlsx dibuat terpisah. Belum tersambung otomatis ke aplikasi. Rekap spreadsheet menghitung baris valid, sementara Alpa harus dicatat eksplisit.
+
+## Backend login dan database
+Kode Laravel terdapat pada [backend/](backend/README.md). Backend membutuhkan server PHP, tidak berjalan di GitHub Pages. Tahap ini mencakup akun admin/karyawan, absensi menggunakan waktu server, riwayat pribadi dan rekap HR.
