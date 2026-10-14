@@ -58,3 +58,5 @@ Lokasi absensi diambil otomatis saat halaman dibuka dengan izin browser. Saat me
 Jika perangkat memberikan lokasi lama, aplikasi menunggu pembaruan melalui watchPosition hingga 30 detik, lalu menghentikan pengambilan lokasi setelah berhasil/gagal atau halaman ditutup. Lokasi lama tidak diterima. Jika gagal, periksa jam otomatis, layanan lokasi, dan izin browser atau uji pada HP. Pengujian alur browser simulasi: `node --test tests/Browser/location.test.cjs` (Node 22+).
 
 Mode sementara selfie saja: tetapkan `ATTENDANCE_REQUIRE_LOCATION=false` di `.env`, lalu `php artisan config:clear`. Selfie masuk/pulang tetap wajib. GPS tidak diminta otomatis; koordinat kosong disimpan NULL dan ditandai untuk pemeriksaan HR. Radius tidak diperiksa tanpa lokasi. Kembalikan true untuk GPS wajib; riwayat lama tetap tersimpan. Jika koordinat dikirim ke server, validasi lengkap dan radius tetap berlaku.
+
+Alur kamera: tekan Absen masuk/pulang untuk membuka kamera. Tombol yang sama berubah menjadi Ambil foto & kirim absensi; menekannya mengambil foto dan mengirim formulir. Batal menutup kamera tanpa menyimpan absensi. Izin kamera tetap diperlukan; foto tidak diambil diam-diam.

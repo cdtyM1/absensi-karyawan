@@ -33,5 +33,5 @@ test('future and invalid timestamps do not become usable locations',()=>{
 });
 
 test('selfie-only mode never starts GPS and still blocks missing selfie',async()=>{
- const x=setup(false);assert.equal(x.calls(),0);let prevented=false;await x.listeners.submit({preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.match(x.nodes['[data-camera-message]'].textContent,/Ambil selfie/);assert.equal(x.calls(),0);
+ const x=setup(false);assert.equal(x.calls(),0);let prevented=false;await x.listeners.submit({preventDefault(){prevented=true;}});assert.equal(prevented,true);assert.match(x.nodes['[data-camera-message]'].textContent,/Kamera membutuhkan/);assert.equal(x.calls(),0);
 });

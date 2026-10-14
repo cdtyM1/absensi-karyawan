@@ -8,8 +8,8 @@
  <button type="button" data-location hidden>Coba lokasi lagi</button><p data-location-message hidden></p>
  @endif
  <input type="hidden" name="latitude"><input type="hidden" name="longitude"><input type="hidden" name="accuracy">
- <button type="button" data-camera>Buka kamera</button> <button type="button" data-capture disabled>Ambil selfie</button> <button type="button" data-stop>Tutup kamera</button>
- <video data-video autoplay muted playsinline hidden></video><img data-preview alt="Selfie yang akan dikirim" hidden><p data-camera-message role="status">Selfie belum diambil.</p>
+ <video data-video autoplay muted playsinline hidden></video><img data-preview alt="Foto absensi yang dikirim" hidden>
+ <button type="button" data-cancel hidden>Batal</button><p data-camera-message role="status">Tekan tombol absensi untuk membuka kamera, lalu ambil foto dan kirim.</p>
  <input type="file" name="selfie" accept="image/jpeg,image/png" hidden>
  <p><small>Lokasi dan foto dapat diperiksa oleh kamu dan Admin/HR. Selfie tidak memakai pengenalan wajah.</small></p>
 </div>
