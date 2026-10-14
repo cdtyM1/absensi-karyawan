@@ -8,6 +8,9 @@
 <br>Durasi diajukan: {{ intdiv($item->duration_minutes,60) }} jam {{ $item->duration_minutes%60 }} menit
 @endif
 <p class="request-reason">{{ $item->reason }}</p>
+@if($item->attachment_path)
+<p><a href="{{ route('requests.attachment', $item) }}" target="_blank" rel="noopener">Lihat lampiran foto</a></p>
+@endif
 <span class="request-status">{{ $item->status }}</span>
 @if($item->reviewed_at)
 <p>Catatan: {{ $item->review_note }}<br><small>Diproses {{ $item->reviewer?->name }} · {{ $item->reviewed_at->format('d/m/Y H:i') }} WIB</small></p>

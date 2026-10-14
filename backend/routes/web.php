@@ -15,6 +15,7 @@ Route::middleware('guest')->group(function () {
 });
 Route::middleware(['auth', ActiveAccount::class])->group(function () {
     Route::get('/requests', [WorkRequestController::class, 'index'])->name('requests');
+    Route::get('/requests/{workRequest}/attachment', [WorkRequestController::class, 'attachment'])->name('requests.attachment');
     Route::post('/requests', [WorkRequestController::class, 'store'])->name('requests.store');
     Route::get('/admin/requests', [WorkRequestController::class, 'admin'])->name('requests.admin');
     Route::patch('/admin/requests/{workRequest}', [WorkRequestController::class, 'review'])->name('requests.review');

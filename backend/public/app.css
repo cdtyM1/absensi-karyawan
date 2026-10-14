@@ -7,3 +7,5 @@ button.danger{background:#aa3434}
 .account-scroll{max-height:360px;overflow:auto;border:1px solid #e5eaf0;border-radius:8px}.account-scroll table{min-width:400px}.account-scroll thead th{position:sticky;top:0;background:#fff;z-index:1}.account-scroll [hidden]{display:none}.account-scroll:focus-visible{outline:2px solid #087d76;outline-offset:2px}
 
 textarea{display:block;width:100%;padding:12px;margin:8px 0 16px;border:1px solid #bdcbd3;border-radius:7px;font:inherit;resize:vertical}.request-reason{white-space:pre-wrap;overflow-wrap:anywhere}.request-status{display:inline-block;padding:6px 10px;background:#e8f3f2;border-radius:6px}.approved-request{padding:15px 0;border-bottom:1px solid #e5eaf0}nav{flex-wrap:wrap}
+
+[data-request-form] [hidden]{display:none}

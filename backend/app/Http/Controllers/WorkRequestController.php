@@ -8,7 +8,9 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class WorkRequestController extends Controller
 {
@@ -26,7 +28,7 @@ class WorkRequestController extends Controller
         if (! Schema::hasTable('work_requests')) {
             throw ValidationException::withMessages(['request' => 'Modul belum siap. Jalankan php artisan migrate pada server.']);
         }
-        $data = $r->validate(['kind' => 'required|in:Izin,Sakit,Cuti,Lembur', 'scope' => 'required|in:Sehari penuh,Sebagian hari', 'start_date' => 'required|date_format:Y-m-d', 'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date', 'start_time' => 'nullable|date_format:H:i', 'end_time' => 'nullable|date_format:H:i', 'reason' => 'required|string|max:2000']);
+        $data = $r->validate(['kind' => 'required|in:Izin,Sakit,Cuti,Lembur', 'scope' => 'required|in:Sehari penuh,Sebagian hari', 'start_date' => 'required|date_format:Y-m-d', 'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date', 'start_time' => 'nullable|date_format:H:i', 'end_time' => 'nullable|date_format:H:i', 'reason' => 'required|string|max:2000', 'attachment' => 'nullable|file|image|mimes:jpg,jpeg,png|max:5120|dimensions:max_width=6000,max_height=6000']);
         $timed = $data['kind'] === 'Lembur' || $data['scope'] === 'Sebagian hari';
         if ($data['kind'] !== 'Izin' && $data['kind'] !== 'Lembur' && $data['scope'] !== 'Sehari penuh') {
             throw ValidationException::withMessages(['scope' => 'Sakit dan cuti menggunakan rentang hari penuh.']);
@@ -42,15 +44,38 @@ class WorkRequestController extends Controller
         if ($end->lessThanOrEqualTo($start) || ($timed && $start->diffInMinutes($end) > 1440) || (! $timed && $start->diffInDays($end) > 366)) {
             throw ValidationException::withMessages(['end_date' => 'Waktu selesai harus sesudah mulai. Pengajuan per jam maksimal 24 jam; rentang hari maksimal 366 hari.']);
         }
-        DB::transaction(function () use ($r, $data, $start, $end, $timed) {
-            User::whereKey($r->user()->id)->lockForUpdate()->firstOrFail();
-            if (WorkRequest::where('user_id', $r->user()->id)->whereIn('status', ['Menunggu', 'Disetujui'])->where('starts_at', '<', $end)->where('ends_at', '>', $start)->exists()) {
-                throw ValidationException::withMessages(['start_date' => 'Ada pengajuan menunggu/disetujui pada waktu yang bertumpang tindih.']);
+        $attachment = null;
+        if ($r->hasFile('attachment')) {
+            if (! Schema::hasColumn('work_requests', 'attachment_path')) {
+                throw ValidationException::withMessages(['attachment' => 'Lampiran belum siap. Jalankan php artisan migrate pada server.']);
             }
-            WorkRequest::create(['user_id' => $r->user()->id, 'kind' => $data['kind'], 'scope' => $timed ? 'Sebagian hari' : 'Sehari penuh', 'starts_at' => $start, 'ends_at' => $end, 'duration_minutes' => $data['kind'] === 'Lembur' ? (int) $start->diffInMinutes($end) : null, 'reason' => $data['reason'], 'status' => 'Menunggu']);
-        }, 5);
+            $attachment = $r->file('attachment')->store('requests/'.$r->user()->id, 'evidence');
+        }
+        try {
+            DB::transaction(function () use ($r, $data, $start, $end, $timed, $attachment) {
+                User::whereKey($r->user()->id)->lockForUpdate()->firstOrFail();
+                if (WorkRequest::where('user_id', $r->user()->id)->whereIn('status', ['Menunggu', 'Disetujui'])->where('starts_at', '<', $end)->where('ends_at', '>', $start)->exists()) {
+                    throw ValidationException::withMessages(['start_date' => 'Ada pengajuan menunggu/disetujui pada waktu yang bertumpang tindih.']);
+                }
+                WorkRequest::create(['user_id' => $r->user()->id, 'kind' => $data['kind'], 'scope' => $timed ? 'Sebagian hari' : 'Sehari penuh', 'starts_at' => $start, 'ends_at' => $end, 'duration_minutes' => $data['kind'] === 'Lembur' ? (int) $start->diffInMinutes($end) : null, 'reason' => $data['reason'], 'status' => 'Menunggu', ...($attachment ? ['attachment_path' => $attachment] : [])]);
+            }, 5);
+        } catch (Throwable $e) {
+            if ($attachment) {
+                Storage::disk('evidence')->delete($attachment);
+            }
+            throw $e;
+        }
 
         return redirect()->route('requests')->with('status', 'Pengajuan dikirim dan menunggu persetujuan Admin/HR.');
+    }
+
+    public function attachment(Request $r, WorkRequest $workRequest)
+    {
+        abort_unless($r->user()->role === 'admin' || $r->user()->id === $workRequest->user_id, 403);
+        $path = $workRequest->attachment_path;
+        abort_unless($path && Storage::disk('evidence')->exists($path), 404);
+
+        return response()->file(Storage::disk('evidence')->path($path), ['Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff'])->setPrivate();
     }
 
     public function admin(Request $r)
@@ -77,6 +102,6 @@ class WorkRequestController extends Controller
             $item->update(['status' => $data['status'], 'review_note' => $data['review_note'], 'reviewer_id' => $r->user()->id, 'reviewed_at' => CarbonImmutable::now('Asia/Jakarta')]);
         }, 5);
 
-        return back()->with('status','Keputusan pengajuan berhasil disimpan.');
+        return back()->with('status', 'Keputusan pengajuan berhasil disimpan.');
     }
 }
