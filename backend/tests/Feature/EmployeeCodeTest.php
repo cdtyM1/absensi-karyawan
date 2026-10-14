@@ -16,6 +16,15 @@ class EmployeeCodeTest extends TestCase
         return $this->post('/admin/users', array_merge(['name' => 'New Staff', 'email' => $email, 'password' => 'LongPassword1234', 'password_confirmation' => 'LongPassword1234'], $extra));
     }
 
+    public function test_admin_remains_accessible_before_numbering_migration(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        \Illuminate\Support\Facades\Schema::drop('employee_code_sequences');
+        $this->get('/admin')->assertOk()->assertSee('Rekap kehadiran');
+        $this->createEmployee('new@example.test')->assertSessionHasErrors('employee_code');
+        $this->assertDatabaseMissing('users', ['email' => 'new@example.test']);
+    }
+
     public function test_ids_continue_existing_sequence_and_ignore_client_supplied_code(): void
     {
         $admin = User::factory()->create(['role' => 'admin', 'employee_code' => 'z001']);
