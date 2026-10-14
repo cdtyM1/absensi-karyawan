@@ -29,7 +29,7 @@
 <p data-account-count role="status" aria-live="polite">{{ $users->count() }} akun</p>
 <div class="account-scroll" tabindex="0" role="region" aria-label="Daftar akun karyawan"><table id="account-table"><thead><tr><th>ID</th><th>Nama</th><th>Akses</th><th>Kelola</th></tr></thead><tbody>
 @foreach($users as $u)
-<tr data-account-row><td>{{ $u->employee_code }}</td><td>{{ $u->name }}</td><td>{{ $u->role }} / {{ $u->active?'Aktif':'Nonaktif' }}</td><td><a href="{{ route('admin.users.edit',$u) }}">Kelola</a></td></tr>
+<tr data-account-row><td>{{ $u->employee_code }}</td><td>{{ $u->name }}</td><td>{{ $u->role }} / {{ $u->active?'Aktif':'Nonaktif' }}</td><td><a class="account-gear" href="{{ route('admin.users.edit',$u) }}" aria-label="Kelola akun {{ $u->name }}" title="Kelola akun {{ $u->name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3h5l.5 3 2 1.2 2.8-1 2.5 4.3-2.3 2v2.3l2.3 2-2.5 4.3-2.8-1-2 1.2-.5 3h-5l-.5-3-2-1.2-2.8 1-2.5-4.3 2.3-2v-2.3l-2.3-2 2.5-4.3 2.8 1 2-1.2z" transform="translate(1 0) scale(.91 .87)"/><circle cx="12" cy="12" r="3"/></svg></a></td></tr>
 @endforeach
 <tr data-account-empty @if($users->isNotEmpty()) hidden @endif><td colspan="4">Tidak ada akun yang cocok.</td></tr>
 </tbody></table></div></div></div>
