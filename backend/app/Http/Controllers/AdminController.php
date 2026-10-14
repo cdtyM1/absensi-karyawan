@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Services\EmployeeCode;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -26,7 +28,7 @@ class AdminController extends Controller
     {
         $this->authorizeAdmin($r);
 
-        return view('admin', ['records' => $this->records($r)->paginate(30)->withQueryString(), 'users' => User::orderBy('name')->get()]);
+        return view('admin', ['records' => $this->records($r)->paginate(30)->withQueryString(), 'users' => User::orderBy('name')->get(), 'nextEmployeeCode' => EmployeeCode::preview()]);
     }
 
     public function createUser(Request $r)
@@ -34,17 +36,21 @@ class AdminController extends Controller
         $this->authorizeAdmin($r);
         if (is_string($r->input('email'))) {
             $r->merge(['email' => strtolower(trim($r->input('email')))]);
-        }$data = $r->validate(['name' => 'required|string|max:100', 'employee_code' => 'required|regex:/^[A-Za-z0-9_-]+$/|max:30|unique:users', 'email' => 'required|email|max:255|unique:users', 'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()]]);
-        $user = new User;
-        $user->name = $data['name'];
-        $user->employee_code = $data['employee_code'];
-        $user->email = strtolower($data['email']);
-        $user->password = Hash::make($data['password']);
-        $user->role = 'employee';
-        $user->active = true;
-        $user->save();
+        }$data = $r->validate(['name' => 'required|string|max:100', 'email' => 'required|email|max:255|unique:users', 'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()]]);
+        $data['password'] = Hash::make($data['password']);
+        $user = DB::transaction(function () use ($data) {
+            $user = new User;
+            $user->name = $data['name'];
+            $user->employee_code = EmployeeCode::allocate();
+            $user->email = $data['email'];
+            $user->password = $data['password'];
+            $user->role = 'employee';
+            $user->active = true;
+            $user->save();
+            return $user;
+        }, 5);
 
-        return back()->with('status', 'Akun karyawan berhasil dibuat.');
+        return back()->with('status', 'Akun karyawan berhasil dibuat dengan ID '.$user->employee_code.'.');
     }
 
     public function export(Request $r)
