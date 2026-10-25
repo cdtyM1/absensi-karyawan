@@ -1,55 +1,83 @@
-# Jayahana Absensi — Master Blueprint V1.3.4
+# JAYAHANA ABSENSI — MASTER BLUEPRINT V1.3.4
 
-Status: **Design baseline approved; implementation and hosting staging not yet approved/deployed**  
-Date: 2026-10-25  
-Audience: product owner, ChatGPT, Codex, developers
+**Status:** Baseline desain disetujui; implementasi dan staging belum diaktifkan  
+**Tanggal:** 25 Oktober 2026  
+**Pemilik sistem:** Jayahana Groups
 
-## Product vision
-A friendly, fast, trustworthy employee attendance and HRIS experience. Prioritize ease of use on Android and iPhone without sacrificing desktop capabilities or existing business rules. The design direction is **Modern Friendly Premium** — red/black Jayahana identity with spacious, light surfaces, soft corners and restrained motion. Do not copy third-party branded assets or proprietary layouts.
+## Visi
+Membangun aplikasi absensi dan HRIS yang mudah digunakan karyawan, modern, nyaman, responsif, serta dapat dikembangkan tanpa merusak fitur atau data lama. Identitas visual **Modern Friendly Premium**: merah-hitam Jayahana, latar terang, kartu lembut, dan animasi ringan. Referensi produk pihak ketiga hanya inspirasi; jangan menyalin aset/desain berhak cipta.
 
-## Design tokens
-- Primary `#B91C1C`; dark `#171717`; soft-red `#FFF1F2`; canvas `#F8FAFC`; success `#16A34A`; warning `#D97706`; error `#DC2626`.
-- Font: Inter with system sans-serif fallback; readable contrast and text scalability.
-- Spacing: 4/8/12/16/24/32px; card radius 12–20px; tap targets at least 44x44px (primary buttons minimum 48px tall).
-- Motion 150–250ms where useful; honor reduced-motion preference. Avoid heavy mobile assets.
-- Never signal success before server persistence is confirmed.
+## Prinsip UX
+- Employee-first: absensi dalam sedikit langkah; mobile-first untuk Android dan iPhone, tetap mendukung desktop.
+- Bahasa Indonesia yang jelas; satu tombol absensi utama berubah sesuai status kehadiran.
+- Navigasi karyawan: **Beranda, Riwayat, Pengajuan, Profil**.
+- Dahulukan jam WIB, status hari ini, dan tindakan absen; hindari tabel panjang di beranda mobile.
+- Alur: pilih absen → informasi izin GPS/kamera → lokasi dan selfie → konfirmasi → simpan ke server → tampilkan hasil dan riwayat.
+- Pesan berhasil **hanya** setelah server mengonfirmasi penyimpanan.
+- Sediakan loading, empty, error, offline, penolakan izin, dan pemulihan jaringan yang mudah dipahami.
+- Animasi ringan dan tidak menghalangi pengguna; aksesibilitas dan kontras terjaga.
 
-## Employee experience
-- Primary mobile navigation: **Beranda, Riwayat, Pengajuan, Profil**.
-- Above the fold: friendly greeting, current WIB time/date, today's status, and **one primary attendance action** (check-in or check-out as appropriate).
-- Flow: choose action → location and camera permission/explanations → selfie + location check → confirmation → server submission → accurate feedback and refreshed history.
-- GPS outside office radius is labeled for monitoring; **do not block submission solely for radius**. Field assignments may happen anywhere, with coordinates or location details when available.
-- Keep empty, loading, failure, offline, denied-permission and slow-network states plain-language and recoverable.
-- Mobile history uses compact cards; desktop can use tables. Keep forms concise and accessible.
+## Design Tokens
+- Primary: `#B91C1C`
+- Dark: `#171717`
+- Soft Red: `#FFF1F2`
+- Canvas: `#F8FAFC`
+- Success: `#16A34A`
+- Warning: `#D97706`
+- Error: `#DC2626`
+- Font: Inter, fallback sans-serif.
+- Spacing: 4/8/12/16/24/32 px.
+- Radius kartu: 12–20 px.
+- Tombol utama: tinggi minimal 48 px, target sentuh minimal 44×44 px.
+- Animasi: 150–250 ms; hormati preferensi reduced motion.
+- Ukuran huruf, kontras, dan fokus keyboard harus aksesibel.
 
-## Admin/HR
-Maintain staff management, schedules, attendance monitoring, requests, approvals, exports and auditability. Admin UI may adopt Filament only after dependency/security compatibility review; it is **not** a mandatory rewrite.
+## Modul
+**Karyawan:** Dashboard, Absen Masuk, Absen Pulang, GPS, Selfie, Riwayat, Pengajuan, Profil.
 
-## Non-negotiable business rules
-- Sunday attendance is recorded as holiday overtime and remains pending until authorized Admin/HR approval or rejection.
-- Employee missed check-in/out corrections: within 3 calendar days, including weekends/holidays, until 23:59 WIB on day 3; after that only Admin/HR.
-- Out-of-radius is monitoring, not blanket rejection. Field workers remain supported.
-- Selfie evidence is compressed as appropriate and stored privately; never expose through unauthenticated public paths.
-- Preserve HR authorization boundaries and important working features when redesigning.
-- Planned Google Sheets sync is one-way and resilient; do not silently enable it or send personal records without separate implementation approval.
+**Admin/HR:** Dashboard, Monitoring Absensi, Manajemen Karyawan, Jadwal, Radius, Pengajuan, Persetujuan, Rekap, Ekspor, Audit Log.
 
-## Architecture
-Keep the existing Laravel 12 codebase and business logic. Prefer reusable Blade/Tailwind/Alpine components; consider Livewire/Filament only where compatible. Keep employee UI separate from admin complexity. APIs/integrations must be modular. Do not assume a new database migration, rewrite or PWA capability is already deployed.
+**Pengembangan berikutnya:** Sinkronisasi Google Sheets satu arah serta modul HRIS tambahan setelah disetujui, bukan aktif secara otomatis.
 
-## Preview → approval → production
-1. Audit code/Hostinger in read-only mode.
-2. Implement on branch with documented tests and versioned commit.
-3. Deploy **only after separately authorized staging setup** to an access-controlled preview subdomain (proposed `preview-absensi.jayahanagroups.my.id`) with independent DB, file storage and synthetic accounts; outbound notifications disabled.
-4. Test business flows and responsive UI across desktop, Android and iPhone.
-5. Owner reviews and approves the exact commit/version.
-6. Before separate production authorization: verify backups, restore and rollback approach; plan migrations with impact assessment.
-7. Deploy scoped approved commit, run smoke checks and verify data integrity. Roll back if needed.
+## Aturan Bisnis yang Tidak Boleh Rusak
+- Semua absensi Minggu masuk kategori lembur hari libur, berstatus menunggu hingga Admin/HR menyetujui atau menolak.
+- Karyawan dapat mengajukan koreksi lupa masuk/pulang maksimal **3 hari kalender**, termasuk akhir pekan/libur, sampai **23:59 WIB pada hari ketiga**. Lewat tenggat hanya Admin/HR.
+- Absensi di luar radius kantor **tidak diblokir hanya karena radius**; beri label monitoring. Pekerja lapangan dapat absen dari lokasi kerja sesuai kebijakan dengan koordinat/detail lokasi jika tersedia.
+- Foto selfie dikompresi seperlunya, disimpan privat, dan diakses melalui otorisasi yang tepat.
+- Semua hak akses, fitur penting, dan riwayat harus terjaga selama redesain. Jangan mengubah aturan bisnis tanpa persetujuan eksplisit dan tes regresi.
+- Jangan menaruh kredensial, `.env`, data pribadi, GPS karyawan, atau selfie pada repository publik.
 
-## Quality gates
-- Laravel and JavaScript tests; browser E2E tests where available.
-- Attendance check-in/out, duplicate prevention, GPS and selfie, role access, requests, Sunday overtime, correction window and export regression checks.
-- Mobile responsive, PWA where implemented, contrast, keyboard and touch accessibility.
-- No operational secrets or personal data in public repo, test fixtures, screenshots or logs.
+## Arsitektur
+- Pertahankan Laravel 12 dan aturan bisnis yang sudah berjalan.
+- Pisahkan business logic dari komponen presentasi; komponen UI reusable.
+- Prioritaskan Blade, Tailwind CSS dan Alpine.js; Livewire/Filament dievaluasi sesuai kompatibilitas, bukan kewajiban rewrite.
+- Integrasi baru modular, aman, dan dapat diuji.
+- Root repository berisi demo browser; backend Laravel ada di `backend/`. Status kode hosting harus diaudit tersendiri.
 
-## Codex collaboration
-Follow `AGENTS.md`, this document and domain rules. Every pull request summarizes impact, compatibility, tests, staging evidence and rollback notes. Document design changes in changelog. Approval of this blueprint authorizes documentation and planning only, not production modifications.
+## Preview dan Deployment
+1. Audit repository serta Hostinger dengan akses baca-saja.
+2. Kembangkan pada branch khusus, jalankan tes, catat commit.
+3. Siapkan staging **hanya setelah izin terpisah**, misalnya `preview-absensi.jayahanagroups.my.id`; database, storage, akun sintetis, dan konfigurasi harus terisolasi dari produksi.
+4. Nonaktifkan email/pesan keluar ke karyawan asli di staging; lindungi akses staging.
+5. Preview dapat direvisi berkali-kali dan diuji di Android, iPhone, desktop.
+6. Pemilik menyetujui commit/versi yang tepat. Persetujuan desain **bukan** izin deployment produksi.
+7. Sebelum produksi: verifikasi backup, kemampuan restore, rencana migrasi, rollback, dan dampak perubahan; minta izin produksi eksplisit.
+8. Deploy versi yang disetujui, smoke test, pastikan integritas data, rollback bila gagal.
+
+## Quality Gates
+- Tes Laravel, JavaScript, dan browser lulus sesuai cakupan perubahan.
+- Alur masuk/pulang, anti-duplikasi, GPS, selfie, hak akses, pengajuan, persetujuan lembur Minggu, koreksi tiga hari, rekap/ekspor diuji.
+- UI responsif, aksesibel; browser/PWA konsisten jika PWA sudah diterapkan.
+- Tidak ada data operasional, rahasia, atau rekaman pribadi dalam fixture/log/screenshot publik.
+- Kegagalan tes harus dilaporkan, tidak boleh dinyatakan lulus tanpa bukti.
+
+## Standar Kerja ChatGPT + Codex
+1. Baca `AGENTS.md` dan `docs/BLUEPRINT.md` sebelum mengubah kode.
+2. Audit modul, dependensi, kebijakan akses, dan tes terkait.
+3. Buat perubahan kecil, modular, dan dapat dikembalikan.
+4. Pertahankan kompatibilitas fitur penting; sertakan tes regresi.
+5. Dokumentasikan perubahan, hasil tes, dan alasan desain.
+6. Perbarui preview yang sudah disetujui bila staging tersedia.
+7. Minta persetujuan khusus sebelum merge yang berdampak, migrasi, atau rilis produksi.
+
+**Aturan final:** Dokumen ini dasar konsistensi proyek. Revisi desain harus terkontrol dan terdokumentasi, tidak diam-diam; perubahan produksi memerlukan izin tersendiri.
